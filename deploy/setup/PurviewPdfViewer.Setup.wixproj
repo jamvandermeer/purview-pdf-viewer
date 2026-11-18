@@ -1,0 +1,43 @@
+<Project Sdk="WixToolset.Sdk/7.0.0">
+  <!--
+    setup.exe (Burn-bundle) voor Purview PDF Viewer. Bouwen via Build-Setup.ps1.
+
+    Ondertekenen: WiX roept bij SignOutput=true twee doelen aan:
+      SignBundleEngine – de losgemaakte setup-engine (nodig zodat de handtekening geldig blijft
+                         nadat WiX de pakketten weer aan de engine koppelt)
+      SignBundle       – de uiteindelijke setup.exe
+    Beide gebruiken ..\signing\Sign-Files.ps1.
+  -->
+  <PropertyGroup>
+    <OutputType>Bundle</OutputType>
+    <OutputName>PurviewPdfViewer-Setup</OutputName>
+    <Version Condition=" '$(Version)' == '' ">1.0.0</Version>
+    <!-- "none" = geen standaardconfiguratie in de setup.exe -->
+    <DefaultClientId Condition=" '$(DefaultClientId)' == '' ">none</DefaultClientId>
+    <DefaultTenantId Condition=" '$(DefaultTenantId)' == '' ">none</DefaultTenantId>
+    <DefineConstants>ProductVersion=$(Version);MsiPath=$(MsiPath);IconFile=$(MSBuildThisFileDirectory)..\..\Assets\app.ico;LogoFile=$(MSBuildThisFileDirectory)logo.png;DefaultClientId=$(DefaultClientId);DefaultTenantId=$(DefaultTenantId)</DefineConstants>
+
+    <!-- Ondertekenen: SigningMode = ArtifactSigning | Certificate | (leeg = niet ondertekenen) -->
+    <SignOutput Condition=" '$(SigningMode)' != '' ">true</SignOutput>
+    <SignScript>$(MSBuildThisFileDirectory)..\signing\Sign-Files.ps1</SignScript>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="out\**;obj\**;bin\**" />
+    <None Remove="out\**;obj\**;bin\**" />
+  </ItemGroup>
+
+  <Target Name="SignBundleEngine" Condition=" '$(SignOutput)' == 'true' ">
+    <Message Importance="high" Text="Setup-engine ondertekenen: @(SignBundleEngine)" />
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(SignScript)&quot; -Mode $(SigningMode) -Value &quot;$(SigningValue)&quot; -Files &quot;%(SignBundleEngine.FullPath)&quot;" />
+  </Target>
+
+  <Target Name="SignBundle" Condition=" '$(SignOutput)' == 'true' ">
+    <Message Importance="high" Text="Setup ondertekenen: @(SignBundle)" />
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(SignScript)&quot; -Mode $(SigningMode) -Value &quot;$(SigningValue)&quot; -Files &quot;%(SignBundle.FullPath)&quot;" />
+  </Target>
+</Project>

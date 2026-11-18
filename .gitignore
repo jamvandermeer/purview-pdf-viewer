@@ -1,0 +1,23 @@
+# Build-uitvoer
+bin/
+obj/
+.vs/
+*.user
+publish/
+
+# Installatiepakketten en tussenbestanden
+deploy/msi/staging/
+deploy/msi/out/
+deploy/setup/out/
+deploy/intune/Source/App/
+deploy/intune/out/
+deploy/intune/tools/
+deploy/signing/tools/
+*.msi
+*.intunewin
+*.wixpdb
+
+# Gevoelige/organisatiespecifieke bestanden
+deploy/signing/metadata.json
+deploy/entra/*-PurviewPdfViewer.json
+*.pfx

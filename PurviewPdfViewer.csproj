@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows 10 2004+ TFM: geeft toegang tot Windows.Data.Pdf (ingebouwde PDF-renderer van Windows) -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- MIP SDK bevat native x64-binaries -->
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <AssemblyName>PurviewPdfViewer</AssemblyName>
+    <RootNamespace>PurviewPdfViewer</RootNamespace>
+    <Version>1.0.8</Version>
+    <Product>Purview PDF Viewer</Product>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Zelfde SDK die Adobe Acrobat gebruikt voor Purview-labels -->
+    <PackageReference Include="Microsoft.InformationProtection.File" Version="1.*" />
+    <!-- Aanmelden via MSAL + Windows-broker (WAM): SSO en Conditional Access-compliant -->
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.*" />
+    <PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.*" />
+  </ItemGroup>
+
+  <!-- Uitrolscripts en gebouwde pakketten horen niet bij de app zelf -->
+  <ItemGroup>
+    <Compile Remove="deploy\**" />
+    <Page Remove="deploy\**" />
+    <None Remove="deploy\**" />
+    <Content Remove="deploy\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+    <None Remove="Assets\*.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

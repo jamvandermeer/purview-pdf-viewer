@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Purview PDF Viewer – MSI-definitie.
+
+  Eén MSI voor alle organisaties. De tenantconfiguratie gaat mee als MSI-eigenschap:
+    msiexec /i PurviewPdfViewer-1.0.0.msi CLIENTID=<guid> TENANTID=<tenant> /qn
+
+  De waarden komen in HKLM\SOFTWARE\PurviewPdfViewer en blijven bij upgrades/reparatie behouden
+  als ze dan niet opnieuw worden meegegeven.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Package Name="Purview PDF Viewer"
+           Manufacturer="Adoptify Technology B.V."
+           Version="$(var.ProductVersion)"
+           UpgradeCode="6C8E2B1F-4A7D-4E39-9B5C-2F1A0D7E3C41"
+           Language="1043"
+           Codepage="1252"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <SummaryInformation Description="PDF-viewer met Microsoft Purview-gevoeligheidslabels" />
+
+    <!-- Nieuwere versie vervangt oudere; oudere over nieuwere installeren wordt geweigerd. -->
+    <MajorUpgrade DowngradeErrorMessage="Er is al een nieuwere versie van [ProductName] geïnstalleerd." />
+
+    <!-- Alles in het MSI zelf, zodat de handtekening het hele pakket dekt. -->
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- Let op: Windows Installer rapporteert op Windows 10/11 een oud versienummer (VersionNT 603),
+         dus een betrouwbare check op Windows 10 2004+ kan hier niet; die vereiste staat in Intune. -->
+    <Launch Condition="Installed OR VersionNT64"
+            Message="[ProductName] vereist een 64-bits versie van Windows." />
+
+    <!-- ── Configuratie-eigenschappen (onthouden tussen upgrades) ──────────────── -->
+    <Property Id="CLIENTID" Secure="yes" />
+    <Property Id="TENANTID" Secure="yes" />
+
+    <Property Id="SAVED_CLIENTID" Secure="yes">
+      <RegistrySearch Id="SavedClientIdSearch" Root="HKLM" Key="SOFTWARE\PurviewPdfViewer"
+                      Name="ClientId" Type="raw" Bitness="always64" />
+    </Property>
+    <Property Id="SAVED_TENANTID" Secure="yes">
+      <RegistrySearch Id="SavedTenantIdSearch" Root="HKLM" Key="SOFTWARE\PurviewPdfViewer"
+                      Name="TenantId" Type="raw" Bitness="always64" />
+    </Property>
+
+    <SetProperty Id="CLIENTID" Value="[SAVED_CLIENTID]" After="AppSearch" Sequence="both"
+                 Condition="NOT CLIENTID AND SAVED_CLIENTID" />
+    <SetProperty Id="TENANTID" Value="[SAVED_TENANTID]" After="AppSearch" Sequence="both"
+                 Condition="NOT TENANTID AND SAVED_TENANTID" />
+
+    <!-- ── Pictogram voor PDF-documenten ───────────────────────────────────────
+         PDF-bestanden houden hun vertrouwde PDF-pictogram, ook als deze app de standaard wordt.
+         Volgorde: Adobe Acrobat → Acrobat Reader → Microsoft Edge → algemeen Windows-documentpictogram.
+         (Het app-pictogram zelf blijft gewoon voor de .exe, snelkoppeling en taakbalk.) -->
+    <Property Id="PDFICON_ACROBAT" Secure="yes">
+      <RegistrySearch Id="PdfIconAcrobat" Root="HKLM" Key="SOFTWARE\Classes\Acrobat.Document.DC\DefaultIcon"
+                      Type="raw" Bitness="always64" />
+    </Property>
+    <Property Id="PDFICON_READER" Secure="yes">
+      <RegistrySearch Id="PdfIconReader" Root="HKLM" Key="SOFTWARE\Classes\AcroExch.Document.DC\DefaultIcon"
+                      Type="raw" Bitness="always64" />
+    </Property>
+    <Property Id="PDFICON_EDGE" Secure="yes">
+      <RegistrySearch Id="PdfIconEdge" Root="HKLM" Key="SOFTWARE\Classes\MSEdgePDF\DefaultIcon"
+                      Type="raw" Bitness="always64" />
+    </Property>
+
+    <SetProperty Id="PDFICON" Action="SetPdfIconAcrobat" Value="[PDFICON_ACROBAT]" After="AppSearch" Sequence="both"
+                 Condition="PDFICON_ACROBAT" />
+    <SetProperty Id="PDFICON" Action="SetPdfIconReader" Value="[PDFICON_READER]" After="AppSearch" Sequence="both"
+                 Condition="NOT PDFICON_ACROBAT AND PDFICON_READER" />
+    <SetProperty Id="PDFICON" Action="SetPdfIconEdge" Value="[PDFICON_EDGE]" After="AppSearch" Sequence="both"
+                 Condition="NOT PDFICON_ACROBAT AND NOT PDFICON_READER AND PDFICON_EDGE" />
+    <SetProperty Id="PDFICON" Action="SetPdfIconGeneric" Value="[SystemFolder]imageres.dll,-102" After="AppSearch" Sequence="both"
+                 Condition="NOT PDFICON_ACROBAT AND NOT PDFICON_READER AND NOT PDFICON_EDGE" />
+
+    <!-- ── Apps en onderdelen ─────────────────────────────────────────────────── -->
+    <Icon Id="AppIcon.exe" SourceFile="$(var.AppSourceDir)\PurviewPdfViewer.exe" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.exe" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPURLINFOABOUT" Value="https://www.adoptify.nl" />
+
+    <!-- Draaiende app netjes afsluiten (en zo nodig beëindigen) bij upgrade of verwijderen,
+         zodat er geen herstart nodig is. -->
+    <util:CloseApplication Id="CloseViewer" Target="PurviewPdfViewer.exe"
+                           CloseMessage="yes" RebootPrompt="no" TerminateProcess="1" Timeout="5" />
+
+    <Feature Id="Main" Title="Purview PDF Viewer" AllowAbsent="no">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="FileAssociation" />
+      <ComponentRef Id="Configuration" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Purview PDF Viewer" />
+    </StandardDirectory>
+
+    <!-- Alle bestanden uit de (ondertekende) publish-map, behalve de .exe die hieronder apart staat. -->
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(var.AppSourceDir)\**">
+        <Exclude Files="$(var.AppSourceDir)\PurviewPdfViewer.exe" />
+        <Exclude Files="$(var.AppSourceDir)\**\*.pdb" />
+      </Files>
+    </ComponentGroup>
+
+    <!-- Hoofdprogramma. -->
+    <Component Id="MainExecutable" Directory="INSTALLFOLDER">
+      <File Id="AppExe" Source="$(var.AppSourceDir)\PurviewPdfViewer.exe" KeyPath="yes" />
+    </Component>
+
+    <!-- Snelkoppeling in het Startmenu. Eigen component met HKCU-keypath: dat eist Windows Installer
+         (ICE38/ICE43) voor niet-geadverteerde snelkoppelingen in een profielmap. -->
+    <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder" Guid="E2B7A4C1-9D36-4F58-B0E1-6A3C8D27F519">
+      <Shortcut Id="AppStartMenuShortcut"
+                Name="Purview PDF Viewer"
+                Description="PDF-viewer met Microsoft Purview-gevoeligheidslabels"
+                Target="[#AppExe]"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="SOFTWARE\PurviewPdfViewer"
+                     Name="StartMenuShortcut" Value="1" Type="integer" KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+  <Fragment>
+    <!--
+      Registratie voor PDF: "Openen met" + kiesbaar als standaard-app.
+      Bewust GEEN <Extension>-element: dat zou de machinebrede standaard voor .pdf overschrijven
+      en bij verwijderen de koppeling van bijv. Acrobat stukmaken.
+    -->
+    <Component Id="FileAssociation" Directory="INSTALLFOLDER" Guid="3B0E6F52-8D1A-4C7B-A2E4-91F5C6D08A17">
+      <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\PurviewPdfViewer.Document"
+                     Value="PDF-document (Purview PDF Viewer)" Type="string" KeyPath="yes" />
+      <!-- Documentpictogram = bestaand PDF-pictogram (zie PDFICON), niet het app-pictogram. -->
+      <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\PurviewPdfViewer.Document\DefaultIcon"
+                     Value="[PDFICON]" Type="string" />
+      <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\PurviewPdfViewer.Document\shell\open\command"
+                     Value="&quot;[#AppExe]&quot; &quot;%1&quot;" Type="string" />
+
+      <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\.pdf\OpenWithProgids"
+                     Name="PurviewPdfViewer.Document" Value="" Type="string" />
+
+      <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\PurviewPdfViewer.exe"
+                     Name="FriendlyAppName" Value="Purview PDF Viewer" Type="string" />
+      <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\PurviewPdfViewer.exe\SupportedTypes"
+                     Name=".pdf" Value="" Type="string" />
+      <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\PurviewPdfViewer.exe\shell\open\command"
+                     Value="&quot;[#AppExe]&quot; &quot;%1&quot;" Type="string" />
+
+      <RegistryValue Root="HKLM" Key="SOFTWARE\PurviewPdfViewer\Capabilities"
+                     Name="ApplicationName" Value="Purview PDF Viewer" Type="string" />
+      <RegistryValue Root="HKLM" Key="SOFTWARE\PurviewPdfViewer\Capabilities"
+                     Name="ApplicationDescription" Value="PDF-viewer met Microsoft Purview-gevoeligheidslabels" Type="string" />
+      <RegistryValue Root="HKLM" Key="SOFTWARE\PurviewPdfViewer\Capabilities\FileAssociations"
+                     Name=".pdf" Value="PurviewPdfViewer.Document" Type="string" />
+      <RegistryValue Root="HKLM" Key="SOFTWARE\RegisteredApplications"
+                     Name="PurviewPdfViewer" Value="SOFTWARE\PurviewPdfViewer\Capabilities" Type="string" />
+    </Component>
+
+    <!-- Tenantconfiguratie: alleen schrijven als er een CLIENTID is.
+         Permanent: blijft staan bij upgrade, reparatie en verwijderen, zodat een herinstallatie
+         of upgrade zonder CLIENTID de configuratie niet kwijtraakt. Een nieuwe CLIENTID
+         op de opdrachtregel overschrijft de bestaande waarde. -->
+    <Component Id="Configuration" Directory="INSTALLFOLDER" Guid="A4D1C9E8-5F27-4B63-8E0A-7C2B19F4D356"
+               Condition="CLIENTID" Permanent="yes">
+      <RegistryValue Root="HKLM" Key="SOFTWARE\PurviewPdfViewer"
+                     Name="ClientId" Value="[CLIENTID]" Type="string" KeyPath="yes" />
+      <RegistryValue Root="HKLM" Key="SOFTWARE\PurviewPdfViewer"
+                     Name="TenantId" Value="[TENANTID]" Type="string" />
+    </Component>
+  </Fragment>
+</Wix>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Purview PDF Viewer – setup.exe (WiX Burn-bundle rond het MSI).
+
+  Gebruik:
+    PurviewPdfViewer-Setup-1.0.0.exe                                  (met venster)
+    PurviewPdfViewer-Setup-1.0.0.exe /quiet CLIENTID=<id> TENANTID=<tenant>
+    PurviewPdfViewer-Setup-1.0.0.exe /uninstall /quiet
+
+  Is bij het bouwen een standaard-ClientId opgegeven, dan is CLIENTID/TENANTID op de opdrachtregel optioneel.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+
+  <Bundle Name="Purview PDF Viewer"
+          Manufacturer="Adoptify Technology B.V."
+          Version="$(var.ProductVersion)"
+          UpgradeCode="9F3A7C2E-1B64-4D85-A0E9-5C7B2D18E6F4"
+          IconSourceFile="$(var.IconFile)"
+          AboutUrl="https://www.adoptify.nl"
+          DisableModify="yes"
+          bal:CommandLineVariables="caseInsensitive">
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication Theme="hyperlinkLicense"
+                                              LicenseUrl=""
+                                              LogoFile="$(var.LogoFile)"
+                                              SuppressOptionsUI="yes"
+                                              ShowVersion="yes" />
+    </BootstrapperApplication>
+
+    <!-- Tenantconfiguratie; op te geven op de opdrachtregel. -->
+<?if $(var.DefaultClientId) != "none" ?>
+    <Variable Name="CLIENTID" Value="$(var.DefaultClientId)" bal:Overridable="yes" />
+<?else?>
+    <Variable Name="CLIENTID" bal:Overridable="yes" />
+<?endif?>
+<?if $(var.DefaultTenantId) != "none" ?>
+    <Variable Name="TENANTID" Value="$(var.DefaultTenantId)" bal:Overridable="yes" />
+<?else?>
+    <Variable Name="TENANTID" bal:Overridable="yes" />
+<?endif?>
+
+    <Chain>
+      <MsiPackage Id="PurviewPdfViewerMsi" SourceFile="$(var.MsiPath)">
+        <!-- Alleen doorgeven als er een waarde is; anders behoudt het MSI de bestaande configuratie. -->
+        <MsiProperty Name="CLIENTID" Value="[CLIENTID]" Condition="CLIENTID" />
+        <MsiProperty Name="TENANTID" Value="[TENANTID]" Condition="TENANTID" />
+      </MsiPackage>
+    </Chain>
+  </Bundle>
+</Wix>

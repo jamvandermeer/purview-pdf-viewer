@@ -1,0 +1,89 @@
+<Window x:Class="PurviewPdfViewer.PermissionsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Machtigingen"
+        Icon="/Assets/app.ico"
+        Width="480" Height="680" MinHeight="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+        Background="{StaticResource SurfaceBg}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        Foreground="{StaticResource TextPrimary}">
+    <Window.Resources>
+        <Style x:Key="RoleTitle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,18,0,2"/>
+        </Style>
+        <Style x:Key="RoleText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="6,5"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="AcceptsReturn" Value="False"/>
+            <Setter Property="BorderBrush" Value="#C8C8C8"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24,20,24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Machtigingen" FontSize="22" FontWeight="SemiBold"/>
+            <TextBlock x:Name="LabelText" Margin="0,4,0,0" Foreground="{StaticResource TextSecondary}"/>
+            <Rectangle Height="1" Fill="{StaticResource Border}" Margin="0,14,0,0"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0" Padding="0,0,8,0">
+            <StackPanel>
+                <TextBlock Text="Opgeven wie wat kan doen" FontWeight="SemiBold" Margin="0,14,0,0"/>
+                <TextBlock Style="{StaticResource RoleText}" Margin="0,2,0,0"
+                           Text="Vul e-mailadressen of domeinnamen in (bijvoorbeeld jan@contoso.nl of contoso.nl), gescheiden door een puntkomma."/>
+
+                <TextBlock Text="Viewer" Style="{StaticResource RoleTitle}"/>
+                <TextBlock Style="{StaticResource RoleText}"
+                           Text="De gebruiker kan weergeven. Ze kunnen geen inhoud bewerken, afdrukken, kopiëren of beveiliging wijzigen/verwijderen."/>
+                <TextBox x:Name="ViewerBox"/>
+
+                <TextBlock Text="Beperkte editor" Style="{StaticResource RoleTitle}"/>
+                <TextBlock Style="{StaticResource RoleText}"
+                           Text="De gebruiker kan weergeven en bewerken. Ze kunnen geen inhoud afdrukken, kopiëren of beveiliging wijzigen/verwijderen."/>
+                <TextBox x:Name="RestrictedEditorBox"/>
+
+                <TextBlock Text="Editor" Style="{StaticResource RoleTitle}"/>
+                <TextBlock Style="{StaticResource RoleText}"
+                           Text="De gebruiker kan inhoud weergeven, bewerken, afdrukken en kopiëren. Ze kunnen de beveiliging niet wijzigen/verwijderen."/>
+                <TextBox x:Name="EditorBox"/>
+
+                <TextBlock Text="Eigenaar" Style="{StaticResource RoleTitle}"/>
+                <TextBlock Style="{StaticResource RoleText}"
+                           Text="De gebruiker kan alles doen met het document, inclusief beveiliging verwijderen. U bent altijd eigenaar."/>
+                <TextBox x:Name="OwnerBox"/>
+
+                <Expander Header="Meer opties" Margin="0,20,0,0">
+                    <StackPanel Margin="20,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox x:Name="ExpireCheck" Content="Toegang verloopt op" VerticalAlignment="Center"/>
+                            <DatePicker x:Name="ExpireDate" Margin="10,0,0,0" Width="150"
+                                        IsEnabled="{Binding IsChecked, ElementName=ExpireCheck}"/>
+                        </StackPanel>
+                        <CheckBox x:Name="OfflineCheck" Content="Offline toegang toestaan" IsChecked="True" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,16,0,0">
+            <Button Style="{StaticResource PrimaryButton}" Content="Toepassen" Padding="20,7" IsDefault="True" Click="Apply_Click"/>
+            <Button Style="{StaticResource ToolButton}" Content="Annuleren" Padding="20,7" Margin="8,0,0,0" IsCancel="True"
+                    BorderBrush="{StaticResource Border}" BorderThickness="1"/>
+        </StackPanel>
+    </Grid>
+</Window>

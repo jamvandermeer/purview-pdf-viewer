@@ -1,0 +1,185 @@
+<Window x:Class="PurviewPdfViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Purview PDF Viewer"
+        Icon="/Assets/app.ico"
+        MinWidth="640" MinHeight="420"
+        ResizeMode="CanResize"
+        Background="{StaticResource WindowBg}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        Foreground="{StaticResource TextPrimary}"
+        AllowDrop="True"
+        UseLayoutRounding="True">
+
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Control" Command="ApplicationCommands.Open"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="ApplicationCommands.Save"/>
+        <KeyBinding Key="S" Modifiers="Control+Shift" Command="ApplicationCommands.SaveAs"/>
+        <KeyBinding Key="P" Modifiers="Control" Command="ApplicationCommands.Print"/>
+        <KeyBinding Key="OemPlus" Modifiers="Control" Command="NavigationCommands.IncreaseZoom"/>
+        <KeyBinding Key="Add" Modifiers="Control" Command="NavigationCommands.IncreaseZoom"/>
+        <KeyBinding Key="OemMinus" Modifiers="Control" Command="NavigationCommands.DecreaseZoom"/>
+        <KeyBinding Key="Subtract" Modifiers="Control" Command="NavigationCommands.DecreaseZoom"/>
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Werkbalk -->
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBg}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1" Padding="8,6">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <Button Style="{StaticResource ToolButton}" Command="ApplicationCommands.Open" ToolTip="Openen (Ctrl+O)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE8E5;"/>
+                            <TextBlock Text="Openen" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolButton}" Command="ApplicationCommands.Save" ToolTip="Opslaan (Ctrl+S)">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE74E;"/>
+                    </Button>
+                    <Button Style="{StaticResource ToolButton}" Command="ApplicationCommands.SaveAs" ToolTip="Opslaan als (Ctrl+Shift+S)">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE792;"/>
+                    </Button>
+                    <Button x:Name="PrintButton" Style="{StaticResource ToolButton}" Command="ApplicationCommands.Print" ToolTip="Afdrukken (Ctrl+P)">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE749;"/>
+                    </Button>
+
+                    <Rectangle Width="1" Fill="{StaticResource Border}" Margin="8,4"/>
+
+                    <Button Style="{StaticResource ToolButton}" Command="NavigationCommands.DecreaseZoom" ToolTip="Uitzoomen (Ctrl+-)">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE71F;"/>
+                    </Button>
+                    <TextBlock x:Name="ZoomText" Text="100%" Width="48" TextAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                    <Button Style="{StaticResource ToolButton}" Command="NavigationCommands.IncreaseZoom" ToolTip="Inzoomen (Ctrl++)">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE8A3;"/>
+                    </Button>
+                    <Button Style="{StaticResource ToolButton}" Click="FitWidth_Click" ToolTip="Paginabreedte">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE9A6;"/>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="SensitivityButton" Style="{StaticResource ToolButton}" Click="SensitivityButton_Click"
+                            ToolTip="Gevoeligheidslabel toekennen of wijzigen" IsEnabled="False">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE8EC;"/>
+                            <TextBlock Text="Gevoeligheid" Margin="8,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Style="{StaticResource Icon}" FontSize="10" Text="&#xE70D;"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Rectangle Width="1" Fill="{StaticResource Border}" Margin="8,4"/>
+
+                    <Button x:Name="AccountButton" Style="{StaticResource ToolButton}" Click="AccountButton_Click" ToolTip="Account">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE77B;"/>
+                            <TextBlock x:Name="AccountText" Text="Niet aangemeld" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Labelbalk (zoals de gevoeligheidsbalk in Office/Acrobat) -->
+        <Border x:Name="LabelBar" Grid.Row="1" Visibility="Collapsed" Background="{StaticResource SurfaceBg}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Rectangle x:Name="LabelAccent" Grid.Column="0" Fill="#8A8886"/>
+                <Border x:Name="LabelTint" Grid.Column="1" Grid.ColumnSpan="2" Background="#F5F5F5"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,8" VerticalAlignment="Center">
+                    <Ellipse x:Name="LabelDot" Width="10" Height="10" Fill="#8A8886" VerticalAlignment="Center"/>
+                    <TextBlock Margin="8,0,0,0" VerticalAlignment="Center">
+                        <Run Text="Gevoeligheid:" Foreground="{StaticResource TextSecondary}"/>
+                        <Run x:Name="LabelNameRun" Text="Geen label" FontWeight="SemiBold"/>
+                    </TextBlock>
+                    <StackPanel x:Name="ProtectionPanel" Orientation="Horizontal" Margin="20,0,0,0" Visibility="Collapsed">
+                        <TextBlock Style="{StaticResource Icon}" FontSize="13" Text="&#xE72E;" Foreground="{StaticResource TextSecondary}"/>
+                        <TextBlock x:Name="ProtectionText" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <StackPanel x:Name="RequiredPanel" Orientation="Horizontal" Margin="20,0,0,0" Visibility="Collapsed">
+                        <TextBlock Style="{StaticResource Icon}" FontSize="13" Text="&#xE7BA;" Foreground="{StaticResource Warning}"/>
+                        <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Warning}"
+                                   Text="Je organisatie vereist een gevoeligheidslabel."/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,4,8,4">
+                    <TextBlock x:Name="UnsavedText" Text="Niet-opgeslagen labelwijziging" Foreground="{StaticResource Warning}"
+                               VerticalAlignment="Center" Margin="0,0,10,0" Visibility="Collapsed"/>
+                    <Button x:Name="SaveFromBarButton" Style="{StaticResource PrimaryButton}" Command="ApplicationCommands.Save"
+                            Content="Opslaan" Padding="14,4" Visibility="Collapsed"/>
+                    <Button x:Name="ChangeLabelButton" Style="{StaticResource ToolButton}" Click="SensitivityButton_Click"
+                            Content="Label wijzigen" Padding="12,4"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Documentweergave -->
+        <Grid Grid.Row="2" Background="{StaticResource CanvasBg}">
+            <ItemsControl x:Name="PagesView"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Standard"
+                          VirtualizingPanel.ScrollUnit="Pixel"
+                          ScrollViewer.CanContentScroll="True">
+                <ItemsControl.Template>
+                    <ControlTemplate TargetType="ItemsControl">
+                        <ScrollViewer x:Name="PART_Scroll" Focusable="False"
+                                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                                      CanContentScroll="True" PanningMode="Both">
+                            <ItemsPresenter Margin="0,16"/>
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </ItemsControl.Template>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="{Binding DisplayWidth}" Height="{Binding DisplayHeight}" Margin="16,0,16,16"
+                                HorizontalAlignment="Center"
+                                Background="White" Loaded="Page_Loaded" Unloaded="Page_Unloaded">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.18" Direction="270"/>
+                            </Border.Effect>
+                            <Grid>
+                                <TextBlock Text="{Binding Number, StringFormat='Pagina {0}'}" Foreground="#A0A0A0"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image Source="{Binding Image}" Stretch="Fill"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Lege staat -->
+            <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Style="{StaticResource Icon}" Text="&#xE8A5;" FontSize="48" HorizontalAlignment="Center" Foreground="#9E9E9E"/>
+                <TextBlock x:Name="EmptyTitle" Text="Open een PDF om te beginnen" FontSize="20" FontWeight="SemiBold" Margin="0,16,0,6" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="EmptySubtitle" Text="Gebruik Openen (Ctrl+O) of sleep een PDF naar dit venster."
+                           Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="460"/>
+                <Button x:Name="EmptyOpenButton" Style="{StaticResource PrimaryButton}" Command="ApplicationCommands.Open"
+                        Content="PDF openen" Padding="18,7" Margin="0,18,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Statusbalk -->
+        <Border Grid.Row="3" Background="{StaticResource SurfaceBg}" BorderBrush="{StaticResource Border}" BorderThickness="0,1,0,0" Padding="12,4">
+            <DockPanel>
+                <TextBlock x:Name="PageInfoText" DockPanel.Dock="Right" Foreground="{StaticResource TextSecondary}"/>
+                <TextBlock x:Name="StatusText" Text="Gereed" Foreground="{StaticResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

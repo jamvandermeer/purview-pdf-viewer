@@ -1,0 +1,44 @@
+PURVIEW PDF VIEWER – DISCLAIMER EN GEBRUIKSVOORWAARDEN
+Copyright (c) 2026 Adoptify Technology B.V. Alle rechten voorbehouden.
+
+Purview PDF Viewer, inclusief de broncode, scripts, installatiepakketten en
+bijbehorende documentatie (samen: "de oplossing"), wordt door Adoptify
+Technology B.V. ("Adoptify") uitsluitend ter beschikking gesteld ZOALS DEZE IS
+("AS IS"), zonder enige garantie, uitdrukkelijk of stilzwijgend.
+
+1. GEEN AANSPRAKELIJKHEID
+   Adoptify is niet verantwoordelijk of aansprakelijk voor de werking, de
+   beveiliging of de geschiktheid van de oplossing voor een bepaald doel, noch
+   voor enige directe of indirecte schade die voortvloeit uit de installatie,
+   het gebruik of het niet kunnen gebruiken ervan. Dit omvat onder meer
+   gegevensverlies, onjuist toegepaste gevoeligheidslabels of beveiliging,
+   onbereikbare documenten en bedrijfsonderbreking. De ontvangende organisatie
+   gebruikt de oplossing volledig voor eigen rekening en risico.
+
+2. GEEN ONDERSTEUNING, ONDERHOUD OF UPDATES
+   De oplossing wordt geleverd zonder ondersteuning, onderhoud, updates,
+   beveiligingsupdates of andere dienstverlening. Adoptify is niet verplicht
+   fouten te herstellen, de oplossing aan te passen aan wijzigingen in
+   Microsoft 365, Microsoft Purview, de Microsoft Information Protection SDK of
+   Windows, of vragen over de oplossing te beantwoorden. Het testen, beveiligen,
+   beheren en bijwerken van de oplossing is de verantwoordelijkheid van de
+   ontvangende organisatie. Ondersteuning is uitsluitend mogelijk op basis van
+   een afzonderlijke, schriftelijke overeenkomst.
+
+3. GEEN VERDERE VERSPREIDING
+   De oplossing is uitsluitend bestemd voor intern gebruik door de organisatie
+   aan wie Adoptify deze heeft verstrekt. Het is niet toegestaan de oplossing
+   of delen daarvan zonder voorafgaande schriftelijke toestemming van Adoptify
+   te verspreiden, door te leveren, te verkopen, te publiceren of aan derden
+   ter beschikking te stellen.
+
+4. SOFTWARE VAN DERDEN
+   De oplossing maakt gebruik van software en diensten van derden, waaronder
+   Microsoft (Microsoft Information Protection SDK, Microsoft Entra ID,
+   Microsoft Purview, Intune) en de WiX Toolset. Op het gebruik daarvan zijn de
+   licentievoorwaarden van die partijen van toepassing. De ontvangende
+   organisatie is zelf verantwoordelijk voor het naleven van deze voorwaarden
+   en voor de benodigde licenties.
+
+Door de oplossing te installeren of te gebruiken, gaat de ontvangende
+organisatie akkoord met deze voorwaarden.

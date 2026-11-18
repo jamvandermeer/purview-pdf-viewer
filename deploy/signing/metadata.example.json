@@ -1,0 +1,5 @@
+{
+  "Endpoint": "https://weu.codesigning.azure.net",
+  "CodeSigningAccountName": "<naam van je Artifact Signing-account>",
+  "CertificateProfileName": "<naam van je certificaatprofiel>"
+}
