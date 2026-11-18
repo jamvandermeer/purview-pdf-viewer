@@ -8,3 +8,4 @@
 *.wxs text eol=crlf
 *.ico binary
 *.png binary
+*.docx binary
